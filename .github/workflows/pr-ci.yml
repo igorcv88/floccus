@@ -1,0 +1,19 @@
+name: Pull request checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate funding metadata YAML
+        run: |
+          ruby -ryaml -e 'data = YAML.load_file(".github/FUNDING.yml"); abort "Empty funding config" unless data.is_a?(Hash) && !data.empty?'
+      - name: Whitespace errors
+        run: git diff --check
