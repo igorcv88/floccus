@@ -12,8 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Validate funding metadata YAML
         run: |
           ruby -ryaml -e 'data = YAML.load_file(".github/FUNDING.yml"); abort "Empty funding config" unless data.is_a?(Hash) && !data.empty?'
-      - name: Whitespace errors
-        run: git diff --check
+      - name: Check committed PR changes for whitespace errors
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ -n "$PR_BASE_SHA" ]; then
+            git diff --check "$PR_BASE_SHA" HEAD
+          else
+            git diff --check HEAD~1 HEAD
+          fi
